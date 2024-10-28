@@ -22,7 +22,6 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 320px;
             text-align: center;
-            display: none; /* Oculta o conteúdo inicialmente */
         }
         h3 {
             font-size: 1.2em;
@@ -92,15 +91,10 @@
             margin-top: 15px;
             display: none; /* Oculto até o cálculo ser realizado */
         }
-        #error-message {
-            color: red;
-            margin-top: 10px;
-            display: none; /* Oculto inicialmente */
-        }
     </style>
 </head>
 <body>
-    <div class="container" id="mainContent">
+    <div class="container">
         <h3>Calculadora de Apostas</h3>
         <h3 class="subtitle">Kovalski - Cassino e Arbitragem</h3>
         
@@ -123,31 +117,7 @@
         <p class="profit" id="profitInReais">Lucro em R$: <span id="realProfit" class="currency"></span></p>
     </div>
 
-    <p id="error-message">Senha incorreta. Tente novamente.</p>
-
     <script>
-        const correctPassword = "cabeça"; // Coloque sua senha aqui
-        const mainContent = document.getElementById("mainContent");
-        const errorMessage = document.getElementById("error-message");
-
-        // Função para verificar a senha
-        function checkPassword() {
-            let password;
-            do {
-                password = prompt("Por favor, insira a senha para acessar a calculadora:");
-                if (password === correctPassword) {
-                    mainContent.style.display = "block"; // Exibe o conteúdo principal
-                    errorMessage.style.display = "none"; // Esconde a mensagem de erro
-                    return; // Sai do loop se a senha estiver correta
-                } else {
-                    errorMessage.style.display = "block"; // Exibe a mensagem de erro
-                }
-            } while (true); // Continua pedindo até a senha correta ser inserida
-        }
-
-        // Chama a função para verificar a senha ao carregar a página
-        window.onload = checkPassword;
-
         function createFields(num) {
             const fieldsDiv = document.getElementById("fields");
             fieldsDiv.innerHTML = "";
@@ -156,7 +126,7 @@
             for (let i = 0; i < num; i++) {
                 const input = document.createElement("input");
                 input.type = "number";
-                input.id = `field${i}`;
+                input.id = field${i};
                 input.placeholder = placeholders[i];
                 input.required = true;
                 fieldsDiv.appendChild(input);
@@ -170,7 +140,7 @@
 
             // Verifica os valores dos campos
             for (let i = 0; i < numFields; i++) {
-                const value = parseFloat(document.getElementById(`field${i}`).value);
+                const value = parseFloat(document.getElementById(field${i}).value);
                 if (!value) {
                     alert("Por favor, insira todos os valores.");
                     return;
@@ -212,9 +182,9 @@
             let individualResults = "";
             let profits = [];
             for (let i = 0; i < numFields; i++) {
-                const value = parseFloat(document.getElementById(`field${i}`).value);
+                const value = parseFloat(document.getElementById(field${i}).value);
                 const betResult = (((1 / value) * y) / 100) * r;
-                individualResults += `<p>Aposta ${i + 1} - R$ <span class="currency">${betResult.toFixed(2)}</span></p>`;
+                individualResults += <p>Aposta ${i + 1} - R$ <span class="currency">${betResult.toFixed(2)}</span></p>;
                 
                 // Calcula o lucro e usa Math.abs() para garantir que o valor seja positivo
                 let profit = Math.abs(((r - (value * betResult)) * 100) / r);
@@ -229,7 +199,7 @@
 
             // Calcula o lucro em reais e exibe
             const profitInReaisValue = (minProfit / 100) * r;
-            document.getElementById("realProfit").textContent = `R$ ${profitInReaisValue.toFixed(2)}`;
+            document.getElementById("realProfit").textContent = R$ ${profitInReaisValue.toFixed(2)};
             profitDisplay.style.display = "block";
         }
     </script>
