@@ -20,7 +20,7 @@
             padding: 20px 30px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 320px;
+            width: 350px;
             text-align: center;
         }
         h3 {
@@ -38,10 +38,14 @@
             color: #495057;
             cursor: pointer;
         }
-        #fields input, #inputR {
-            width: 100%;
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .field-row input[type="text"], .field-row input[type="number"] {
+            width: 48%;
             padding: 8px;
-            margin-top: 5px;
             border: 1px solid #ced4da;
             border-radius: 5px;
             font-size: 1em;
@@ -89,7 +93,7 @@
             color: #343a40;
             font-weight: bold;
             margin-top: 15px;
-            display: none; /* Oculto até o cálculo ser realizado */
+            display: none;
         }
     </style>
 </head>
@@ -113,39 +117,55 @@
         <button onclick="calculate()">Calcular</button>
         <p class="result"><span id="status"></span></p>
         <div id="individualResults"></div>
-        <p class="profit" id="profitDisplay">Lucro = <span id="profitResult" class="currency"></span>%</p>
-        <p class="profit" id="profitInReais">Lucro em R$: <span id="realProfit" class="currency"></span></p>
+        <p class="profit" id="profitDisplay">Lucro Mínimo = <span id="profitResult" class="currency"></span>%</p>
+        <p class="profit" id="profitInReais">Lucro Mínimo em R$: <span id="realProfit" class="currency"></span></p>
     </div>
 
     <script>
         function createFields(num) {
             const fieldsDiv = document.getElementById("fields");
             fieldsDiv.innerHTML = "";
-            const placeholders = ["Primeira ODD", "Segunda ODD", "Terceira ODD"];
+            const placeholders = ["CASA 1", "CASA 2", "CASA 3"];
             
             for (let i = 0; i < num; i++) {
-                const input = document.createElement("input");
-                input.type = "number";
-                input.id = `field${i}`;
-                input.placeholder = placeholders[i];
-                input.required = true;
-                fieldsDiv.appendChild(input);
-                fieldsDiv.appendChild(document.createElement("br"));
+                const fieldRow = document.createElement("div");
+                fieldRow.className = "field-row";
+
+                // Campo para o nome da casa
+                const casaInput = document.createElement("input");
+                casaInput.type = "text";
+                casaInput.id = `casa${i}`;
+                casaInput.placeholder = placeholders[i];
+                casaInput.required = true;
+                fieldRow.appendChild(casaInput);
+
+                // Campo para o valor da ODD
+                const oddInput = document.createElement("input");
+                oddInput.type = "number";
+                oddInput.id = `oddValue${i}`;
+                oddInput.placeholder = `ODD ${i + 1}`;
+                oddInput.required = true;
+                fieldRow.appendChild(oddInput);
+
+                fieldsDiv.appendChild(fieldRow);
             }
         }
 
         function calculate() {
-            const numFields = document.querySelectorAll("#fields input").length;
+            const numFields = document.querySelectorAll("#fields .field-row").length;
             let sum = 0;
 
-            // Verifica os valores dos campos
+            // Verifica os valores das ODDS
             for (let i = 0; i < numFields; i++) {
-                const value = parseFloat(document.getElementById(`field${i}`).value);
-                if (!value) {
+                const oddValue = parseFloat(document.getElementById(`oddValue${i}`).value);
+                const casa = document.getElementById(`casa${i}`).value;
+
+                if (!oddValue || !casa) {
                     alert("Por favor, insira todos os valores.");
                     return;
                 }
-                sum += 1 / value;
+
+                sum += 1 / oddValue;
             }
 
             // Verifica o valor de R
@@ -171,34 +191,32 @@
             } else {
                 statusElement.textContent = "Aposta Negada";
                 statusElement.className = "fail";
-                individualResultsDiv.style.display = "none"; // Esconde apostas
-                profitDisplay.style.display = "none"; // Esconde lucro
-                profitInReais.style.display = "none"; // Esconde lucro em reais
+                individualResultsDiv.style.display = "none";
+                profitDisplay.style.display = "none";
+                profitInReais.style.display = "none";
                 return;
             }
 
-            // Calcula os valores j, k, l usando o valor de R
             const y = (1 / x) * 100;
             let individualResults = "";
             let profits = [];
+
             for (let i = 0; i < numFields; i++) {
-                const value = parseFloat(document.getElementById(`field${i}`).value);
-                const betResult = (((1 / value) * y) / 100) * r;
-                individualResults += `<p>Aposta ${i + 1} - R$ <span class="currency">${betResult.toFixed(2)}</span></p>`;
-                
-                // Calcula o lucro e usa Math.abs() para garantir que o valor seja positivo
-                let profit = Math.abs(((r - (value * betResult)) * 100) / r);
+                const oddValue = parseFloat(document.getElementById(`oddValue${i}`).value);
+                const casa = document.getElementById(`casa${i}`).value;
+                const betResult = Math.round((((1 / oddValue) * y) / 100) * r); // Arredonda apenas o valor da aposta
+
+                individualResults += `<p>Aposta ${casa} - R$ <span class="currency">${betResult}</span></p>`;
+                const profit = Math.abs(((r - (oddValue * betResult)) * 100) / r);
                 profits.push(profit);
             }
 
             individualResultsDiv.innerHTML = individualResults;
 
-            // Exibe o menor valor de lucro como resultado final em porcentagem
             const minProfit = Math.min(...profits);
             document.getElementById("profitResult").textContent = minProfit.toFixed(2);
 
-            // Calcula o lucro em reais e exibe
-            const profitInReaisValue = (minProfit / 100) * r;
+            const profitInReaisValue = (minProfit / 100) * r; // Lucro em reais com casas decimais
             document.getElementById("realProfit").textContent = `R$ ${profitInReaisValue.toFixed(2)}`;
             profitDisplay.style.display = "block";
         }
